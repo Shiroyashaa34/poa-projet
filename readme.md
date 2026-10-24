@@ -1,10 +1,8 @@
-# Robot de réconfort — BENENES Nassim & KABOURI OUZENNOU Jaouad
+## BENENES Nassim & KABOURI OUZENNOU Jaouad
 
-Projet de semestre, master informatique. Un robot à perception locale
-consulte un dictionnaire, fouille une armoire et rapporte un objet à un
-résident.
+Projet POA
 
-Langage : Python — Version : 3.9 ou plus récente
+Langage : Python — Version : 3.1 ou plus récente
 
 ## Lancer
 
@@ -23,10 +21,10 @@ Dépendances : aucune (bibliothèque standard de Python uniquement).
 ## Tester
 
 ```
-<à compléter quand les tests existent>
+<...>
 ```
 
-*À compléter : une phrase sur ce que couvrent les tests.*
+
 
 ## Organisation du code
 
@@ -34,13 +32,13 @@ Dépendances : aucune (bibliothèque standard de Python uniquement).
 |---|---|
 | `agent.py` | point d'entrée, boucle de décision |
 | `reconfort_io.py` | fourni : lecture des fichiers d'entrée, écriture de la trace |
-| `…` | *à compléter au fur et à mesure* |
+| `…` |  |
 
 ## État
 
-**Ce qui marche.** *À compléter en fin de projet.*
+**Ce qui marche.** 
 
-**Ce qui ne marche pas.** *À compléter en fin de projet.*
+**Ce qui ne marche pas.**
 
 ## Vidéo
 
