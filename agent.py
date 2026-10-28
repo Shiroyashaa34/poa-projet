@@ -45,8 +45,6 @@ class Agent:
 
     # 3 DECISION 
     def pas_vers(self, cible):
-        """Direction du prochain pas vers `cible`.
-        "ARRIVE" si on y est deja colle, None si aucun chemin (preuve d'inaccessibilite)."""
         chemin = self.memoire.chemin_vers(self.position, cible)
         if chemin is None:
             return None
@@ -78,7 +76,6 @@ class Agent:
 
     # etapes d'une demande
     def rejoindre(self, cible):
-        """Avance tour par tour jusqu'a etre colle a `cible`. False si inaccessible."""
         while True:
             perception, contenu = self.percevoir()
             self.memoriser(perception, contenu)
@@ -90,14 +87,11 @@ class Agent:
             self.agir("AVANCER", d, perception, contenu)
 
     def faire_sur_place(self, action, argument=None):
-        """Un tour sans deplacement : CONSULTER, PRENDRE ou DONNER."""
         perception, contenu = self.percevoir()
         self.memoriser(perception, contenu)
         self.agir(action, argument, perception, contenu)
 
     def fouiller(self, candidats):
-        """Deplace le selecteur jusqu'au premier candidat garni et le prend.
-        Renvoie (casier, repli, objet), ou None si les 15 candidats sont vides."""
         while True:
             perception, contenu = self.percevoir()
             self.memoriser(perception, contenu)

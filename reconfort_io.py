@@ -39,6 +39,21 @@ __all__ = [
 
 VERSION_ATTENDUE = 1
 
+EMOTIONS = (
+    "joie",
+    "confiance",
+    "peur",
+    "surprise",
+    "tristesse",
+    "degout",
+    "colere",
+    "anticipation",
+)
+INTENSITES = ("faible", "moyenne", "forte")
+CASES_GRILLE = ("#", ".", "R", "A", "D", "P")
+
+_derniere_carte: Optional[Dict[str, Any]] = None
+
 
 class ErreurFichier(Exception):
     """Fichier d'entree absent, illisible, ou d'un type inattendu."""
@@ -106,24 +121,204 @@ def _lire_json(chemin: str | Path, format_attendu: str) -> Dict[str, Any]:
     return donnees
 
 
+def _est_entier(valeur: Any) -> bool:
+    return isinstance(valeur, int) and not isinstance(valeur, bool)
+
+
+def _verifier_position(
+    chemin: Path, pos: Any, hauteur: int, largeur: int, nom: str
+) -> tuple[int, int]:
+    if (
+        not isinstance(pos, list)
+        or len(pos) != 2
+        or not _est_entier(pos[0])
+        or not _est_entier(pos[1])
+    ):
+        raise ErreurFichier(f"{chemin} : position invalide pour {nom}")
+    l, c = pos
+    if not (0 <= l < hauteur and 0 <= c < largeur):
+        raise ErreurFichier(f"{chemin} : {nom} hors des bornes ({l}, {c})")
+    return l, c
+
+
 def charger_carte(chemin: str | Path) -> Dict[str, Any]:
     """Charge un fichier carte. Voir l'enonce, section 5.1."""
-    return _lire_json(chemin, "robot-reconfort/carte")
+    global _derniere_carte
+    chemin = Path(chemin)
+    donnees = _lire_json(chemin, "robot-reconfort/carte")
+
+    if not isinstance(donnees.get("nom"), str) or not donnees["nom"]:
+        raise ErreurFichier(f"{chemin} : champ 'nom' manquant ou invalide")
+
+    dimensions = donnees.get("dimensions")
+    if not isinstance(dimensions, dict):
+        raise ErreurFichier(f"{chemin} : champ 'dimensions' manquant ou invalide")
+    hauteur = dimensions.get("hauteur")
+    largeur = dimensions.get("largeur")
+    if not (_est_entier(hauteur) and _est_entier(largeur) and hauteur > 0 and largeur > 0):
+        raise ErreurFichier(f"{chemin} : dimensions invalides")
+
+    grille = donnees.get("grille")
+    if not isinstance(grille, list) or len(grille) != hauteur:
+        raise ErreurFichier(f"{chemin} : la grille doit compter {hauteur} lignes")
+    for ligne in grille:
+        if not isinstance(ligne, str) or len(ligne) != largeur:
+            raise ErreurFichier(f"{chemin} : la grille n'est pas rectangulaire")
+        for car in ligne:
+            if car not in CASES_GRILLE:
+                raise ErreurFichier(f"{chemin} : caractere {car!r} inconnu dans la grille")
+
+    rl, rc = _verifier_position(
+        chemin, donnees.get("depart_robot"), hauteur, largeur, "depart_robot"
+    )
+    if grille[rl][rc] == "#":
+        raise ErreurFichier(f"{chemin} : depart_robot pose sur un mur")
+
+    for meuble in ("armoire", "dictionnaire"):
+        bloc = donnees.get(meuble)
+        if not isinstance(bloc, dict):
+            raise ErreurFichier(f"{chemin} : champ {meuble!r} manquant ou invalide")
+        ml, mc = _verifier_position(
+            chemin, bloc.get("position"), hauteur, largeur, meuble
+        )
+        if grille[ml][mc] == "#":
+            raise ErreurFichier(f"{chemin} : {meuble} pose sur un mur")
+
+    residents = donnees.get("residents")
+    if not isinstance(residents, list) or not residents:
+        raise ErreurFichier(f"{chemin} : champ 'residents' manquant ou vide")
+    ids_vus = set()
+    for res in residents:
+        if not isinstance(res, dict):
+            raise ErreurFichier(f"{chemin} : resident invalide")
+        res_id = res.get("id")
+        if not isinstance(res_id, str) or not res_id:
+            raise ErreurFichier(f"{chemin} : identifiant de resident invalide")
+        if res_id in ids_vus:
+            raise ErreurFichier(f"{chemin} : resident {res_id!r} en double")
+        ids_vus.add(res_id)
+        pl, pc = _verifier_position(
+            chemin, res.get("position"), hauteur, largeur, f"resident {res_id}"
+        )
+        if grille[pl][pc] == "#":
+            raise ErreurFichier(f"{chemin} : resident {res_id} pose sur un mur")
+
+    _derniere_carte = donnees
+    return donnees
 
 
 def charger_dictionnaire(chemin: str | Path) -> Dict[str, Any]:
     """Charge un fichier dictionnaire. Voir l'enonce, section 5.2."""
-    return _lire_json(chemin, "robot-reconfort/dictionnaire")
+    chemin = Path(chemin)
+    donnees = _lire_json(chemin, "robot-reconfort/dictionnaire")
+
+    if not isinstance(donnees.get("nom"), str) or not donnees["nom"]:
+        raise ErreurFichier(f"{chemin} : champ 'nom' manquant ou invalide")
+    if donnees.get("emotions") != list(EMOTIONS):
+        raise ErreurFichier(f"{chemin} : liste 'emotions' invalide")
+    if donnees.get("intensites") != list(INTENSITES):
+        raise ErreurFichier(f"{chemin} : liste 'intensites' invalide")
+
+    entrees = donnees.get("entrees")
+    if not isinstance(entrees, list):
+        raise ErreurFichier(f"{chemin} : champ 'entrees' manquant ou invalide")
+    for entree in entrees:
+        if not isinstance(entree, dict):
+            raise ErreurFichier(f"{chemin} : entree invalide")
+        formes = entree.get("formes")
+        if (
+            not isinstance(formes, list)
+            or not formes
+            or not all(isinstance(f, str) and f for f in formes)
+        ):
+            raise ErreurFichier(f"{chemin} : champ 'formes' invalide")
+        if entree.get("emotion") not in EMOTIONS:
+            raise ErreurFichier(f"{chemin} : emotion inconnue {entree.get('emotion')!r}")
+        if entree.get("intensite") not in INTENSITES:
+            raise ErreurFichier(f"{chemin} : intensite inconnue {entree.get('intensite')!r}")
+
+    return donnees
 
 
 def charger_armoire(chemin: str | Path) -> Dict[str, Any]:
     """Charge un fichier armoire. Voir l'enonce, section 5.3."""
-    return _lire_json(chemin, "robot-reconfort/armoire")
+    chemin = Path(chemin)
+    donnees = _lire_json(chemin, "robot-reconfort/armoire")
+
+    if not isinstance(donnees.get("nom"), str) or not donnees["nom"]:
+        raise ErreurFichier(f"{chemin} : champ 'nom' manquant ou invalide")
+    if donnees.get("emotions") != list(EMOTIONS):
+        raise ErreurFichier(f"{chemin} : liste 'emotions' invalide")
+    if donnees.get("intensites") != list(INTENSITES):
+        raise ErreurFichier(f"{chemin} : liste 'intensites' invalide")
+
+    _verifier_position(chemin, donnees.get("casier_depart"), 3, 8, "casier_depart")
+
+    casiers = donnees.get("casiers")
+    if not isinstance(casiers, list) or len(casiers) != 24:
+        raise ErreurFichier(f"{chemin} : l'armoire doit contenir 24 casiers")
+
+    casiers_vus = set()
+    for casier in casiers:
+        if not isinstance(casier, dict):
+            raise ErreurFichier(f"{chemin} : casier invalide")
+        l, c = casier.get("ligne"), casier.get("colonne")
+        if not (_est_entier(l) and _est_entier(c) and 0 <= l < 3 and 0 <= c < 8):
+            raise ErreurFichier(f"{chemin} : casier hors de l'armoire ({l}, {c})")
+        if (l, c) in casiers_vus:
+            raise ErreurFichier(f"{chemin} : casier ({l}, {c}) en double")
+        casiers_vus.add((l, c))
+        if casier.get("emotion") not in EMOTIONS:
+            raise ErreurFichier(f"{chemin} : emotion inconnue {casier.get('emotion')!r}")
+        if casier.get("intensite") not in INTENSITES:
+            raise ErreurFichier(f"{chemin} : intensite inconnue {casier.get('intensite')!r}")
+        if casier["emotion"] != EMOTIONS[c] or casier["intensite"] != INTENSITES[l]:
+            raise ErreurFichier(f"{chemin} : casier ({l}, {c}) mal indexe")
+        objet = casier.get("objet")
+        if objet is not None and (not isinstance(objet, str) or not objet):
+            raise ErreurFichier(f"{chemin} : objet invalide dans le casier ({l}, {c})")
+
+    return donnees
 
 
-def charger_scenario(chemin: str | Path) -> Dict[str, Any]:
+def charger_scenario(
+    chemin: str | Path, carte: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """Charge un fichier scenario. Voir l'enonce, section 5.4."""
-    return _lire_json(chemin, "robot-reconfort/scenario")
+    chemin = Path(chemin)
+    donnees = _lire_json(chemin, "robot-reconfort/scenario")
+
+    for champ in ("nom", "carte", "armoire"):
+        if not isinstance(donnees.get(champ), str) or not donnees[champ]:
+            raise ErreurFichier(f"{chemin} : champ {champ!r} manquant ou invalide")
+
+    demandes = donnees.get("demandes")
+    if not isinstance(demandes, list):
+        raise ErreurFichier(f"{chemin} : champ 'demandes' manquant ou invalide")
+
+    cible_carte = carte if carte is not None else _derniere_carte
+    residents_connus = (
+        {r["id"] for r in cible_carte["residents"]}
+        if cible_carte is not None
+        else None
+    )
+
+    for dem in demandes:
+        if not isinstance(dem, dict):
+            raise ErreurFichier(f"{chemin} : demande invalide")
+        if not _est_entier(dem.get("numero")):
+            raise ErreurFichier(f"{chemin} : numero de demande invalide")
+        res = dem.get("resident")
+        if not isinstance(res, str) or not res:
+            raise ErreurFichier(f"{chemin} : resident invalide dans une demande")
+        if residents_connus is not None and res not in residents_connus:
+            raise ErreurFichier(
+                f"{chemin} : resident {res!r} absent de la carte"
+            )
+        if not isinstance(dem.get("message"), str):
+            raise ErreurFichier(f"{chemin} : message invalide dans une demande")
+
+    return donnees
 
 
 # ---------------------------------------------------------------------------
