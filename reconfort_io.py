@@ -171,8 +171,8 @@ def charger_carte(chemin: str | Path) -> Dict[str, Any]:
     rl, rc = _verifier_position(
         chemin, donnees.get("depart_robot"), hauteur, largeur, "depart_robot"
     )
-    if grille[rl][rc] == "#":
-        raise ErreurFichier(f"{chemin} : depart_robot pose sur un mur")
+    if grille[rl][rc] != "R":
+        raise ErreurFichier(f"{chemin} : depart_robot ({rl}, {rc}) n'est pas sur un 'R'")
 
     for meuble in ("armoire", "dictionnaire"):
         bloc = donnees.get(meuble)
@@ -181,8 +181,9 @@ def charger_carte(chemin: str | Path) -> Dict[str, Any]:
         ml, mc = _verifier_position(
             chemin, bloc.get("position"), hauteur, largeur, meuble
         )
-        if grille[ml][mc] == "#":
-            raise ErreurFichier(f"{chemin} : {meuble} pose sur un mur")
+        symbole = "A" if meuble == "armoire" else "D"
+        if grille[ml][mc] != symbole:
+            raise ErreurFichier(f"{chemin} : {meuble} ({ml}, {mc}) n'est pas sur un {symbole!r}")
 
     residents = donnees.get("residents")
     if not isinstance(residents, list) or not residents:
@@ -200,8 +201,8 @@ def charger_carte(chemin: str | Path) -> Dict[str, Any]:
         pl, pc = _verifier_position(
             chemin, res.get("position"), hauteur, largeur, f"resident {res_id}"
         )
-        if grille[pl][pc] == "#":
-            raise ErreurFichier(f"{chemin} : resident {res_id} pose sur un mur")
+        if grille[pl][pc] != "P":
+            raise ErreurFichier(f"{chemin} : resident {res_id} ({pl}, {pc}) n'est pas sur un 'P'")
 
     _derniere_carte = donnees
     return donnees
@@ -222,6 +223,7 @@ def charger_dictionnaire(chemin: str | Path) -> Dict[str, Any]:
     entrees = donnees.get("entrees")
     if not isinstance(entrees, list):
         raise ErreurFichier(f"{chemin} : champ 'entrees' manquant ou invalide")
+    formes_vues = set()
     for entree in entrees:
         if not isinstance(entree, dict):
             raise ErreurFichier(f"{chemin} : entree invalide")
@@ -232,6 +234,10 @@ def charger_dictionnaire(chemin: str | Path) -> Dict[str, Any]:
             or not all(isinstance(f, str) and f for f in formes)
         ):
             raise ErreurFichier(f"{chemin} : champ 'formes' invalide")
+        for forme in formes:
+            if forme in formes_vues:
+                raise ErreurFichier(f"{chemin} : le mot {forme!r} apparait dans deux entrees")
+            formes_vues.add(forme)
         if entree.get("emotion") not in EMOTIONS:
             raise ErreurFichier(f"{chemin} : emotion inconnue {entree.get('emotion')!r}")
         if entree.get("intensite") not in INTENSITES:
@@ -297,6 +303,11 @@ def charger_scenario(
         raise ErreurFichier(f"{chemin} : champ 'demandes' manquant ou invalide")
 
     cible_carte = carte if carte is not None else _derniere_carte
+    if cible_carte is not None and donnees["carte"] != cible_carte["nom"]:
+        raise ErreurFichier(
+            f"{chemin} : scenario prevu pour la carte {donnees['carte']!r}, "
+            f"pas pour {cible_carte['nom']!r}"
+        )
     residents_connus = (
         {r["id"] for r in cible_carte["residents"]}
         if cible_carte is not None

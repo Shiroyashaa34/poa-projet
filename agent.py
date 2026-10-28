@@ -1,5 +1,3 @@
-
-
 import sys
 from pathlib import Path
 
@@ -154,7 +152,7 @@ def main(argv):
 
     try:
         carte = rio.charger_carte(chemin_carte)
-        scenario = rio.charger_scenario(chemin_scenario)
+        scenario = rio.charger_scenario(chemin_scenario, carte)
         dictionnaire = rio.charger_dictionnaire(dossier / "dictionnaire.json")
         armoire = rio.charger_armoire(dossier / f"{scenario['armoire']}.json")
     except rio.ErreurFichier as err:
