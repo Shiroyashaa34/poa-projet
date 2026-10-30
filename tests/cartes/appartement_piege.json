@@ -1,0 +1,81 @@
+{
+  "format": "robot-reconfort/carte",
+  "version": 1,
+  "nom": "appartement_piege",
+  "dimensions": {
+    "hauteur": 12,
+    "largeur": 25
+  },
+  "legende": {
+    "#": "mur",
+    ".": "libre",
+    "R": "depart du robot",
+    "A": "armoire",
+    "D": "dictionnaire",
+    "P": "resident"
+  },
+  "grille": [
+    "#########################",
+    "#R.........#.....#......#",
+    "#.########.#.###.#.####.#",
+    "#.#......#.#.#D#.#.#..#.#",
+    "#.#.####.#...#.#...#P.#.#",
+    "#.#.#..#.#####.#####..#.#",
+    "#...#..#.......#.....##.#",
+    "#.###..#######.#.###....#",
+    "#.....A#.......#.#.#.####",
+    "#.#####.#.######.###.#PP#",
+    "#.......#........#.....P#",
+    "#########################"
+  ],
+  "residents": [
+    {
+      "id": "R1",
+      "nom": "Odette",
+      "position": [
+        4,
+        20
+      ]
+    },
+    {
+      "id": "R2",
+      "nom": "Marcel",
+      "position": [
+        9,
+        22
+      ]
+    },
+    {
+      "id": "R3",
+      "nom": "Simone",
+      "position": [
+        9,
+        23
+      ]
+    },
+    {
+      "id": "R4",
+      "nom": "Gaston",
+      "position": [
+        10,
+        23
+      ]
+    }
+  ],
+  "depart_robot": [
+    1,
+    1
+  ],
+  "dictionnaire": {
+    "position": [
+      3,
+      14
+    ]
+  },
+  "armoire": {
+    "position": [
+      8,
+      6
+    ]
+  }
+}

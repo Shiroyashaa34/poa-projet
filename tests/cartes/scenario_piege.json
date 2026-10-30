@@ -1,0 +1,34 @@
+{
+  "format": "robot-reconfort/scenario",
+  "version": 1,
+  "nom": "scenario_piege",
+  "carte": "appartement_piege",
+  "armoire": "armoire_standard",
+  "demandes": [
+    {
+      "numero": 1,
+      "resident": "R1",
+      "message": "Je suis sidéré, je me suis retrouvé tout seul ce matin."
+    },
+    {
+      "numero": 2,
+      "resident": "R2",
+      "message": "Je me sens triste depuis le départ de ma fille."
+    },
+    {
+      "numero": 3,
+      "resident": "R4",
+      "message": "Bonjour, pourriez-vous ouvrir la fenêtre ?"
+    },
+    {
+      "numero": 4,
+      "resident": "R2",
+      "message": "Je reste vigilant, j'ai entendu du bruit cette nuit."
+    },
+    {
+      "numero": 5,
+      "resident": "R3",
+      "message": "Je suis heureux, mon petit-fils vient me voir."
+    }
+  ]
+}
