@@ -16,6 +16,22 @@ SYMBOLE = {"mur": "#", "libre": ".", "armoire": "A", "dictionnaire": "D", "resid
 PAUSE_MUR = 1.8
 PAUSE_FIN = 3.0
 
+#ajout couleurs pour les symboles 
+RESET = "\033[0m"
+COULEUR = {
+    "#": "\033[97m",   #mur: blanc 
+    "?": "\033[90m",   #inconnu: gris
+    "A": "\033[33m",   #armoire: jaune
+    "D": "\033[36m",   #dictionnaire: cyan
+    "P": "\033[35m",   #resident: magenta
+    "█": "\033[92m",   #robot: vert 
+}
+ROUGE = "\033[91m"     #mur decouvert a ce pas
+
+def colorer(symbole, couleur=None):
+    couleur = couleur or COULEUR.get(symbole)
+    return f"{couleur}{symbole}{RESET}" if couleur else symbole
+
 def effacer_ecran():
     os.system("cls" if os.name == "nt" else "clear")
 
@@ -58,6 +74,9 @@ def dessiner(carte, trace, mentale, pas, livraisons_faites, changees):
         if l == l_robot:
             reel[c_robot] = "█"
             ment[c_robot] = "█"
+        nouveaux_murs = {c for (l2, c, sym) in changees if l2 == l and sym == "#"}
+        reel = [colorer(s) for s in reel]
+        ment = [colorer(s, ROUGE if c in nouveaux_murs else None) for c, s in enumerate(ment)]
         print(" " + "".join(reel) + "      " + "".join(ment))
 
     action = pas["action"] + (f" {pas['argument']}" if pas["argument"] else "")
@@ -66,7 +85,7 @@ def dessiner(carte, trace, mentale, pas, livraisons_faites, changees):
     print(" Vu      : " + "  ".join(f"{d} {v}" for d, v in pas["perception"].items()))
 
     if any(sym == "#" for _, _, sym in changees):
-        print("\n  >>> Mur decouvert <<<")
+        print(f"\n  {ROUGE}>>> Mur decouvert <<<{RESET}")
 
     if livraisons_faites:
         print("\n Livraisons :")
@@ -75,6 +94,7 @@ def dessiner(carte, trace, mentale, pas, livraisons_faites, changees):
             print(f"   {liv['demande']}. {liv['resident']} : {etat}")
 
 def main(argv):
+    os.system("")   #active les couleurs dans le terminal Windows
     if len(argv) not in (3, 4, 5):
         print(__doc__.strip())
         return 2
