@@ -32,6 +32,7 @@ def carte_depuis_grille(grille, nom="mini"):
 
 def armoire_test(vides=(), casier_depart=(1, 0)):
     """Armoire complete: chaque casier contient 'objet_l_c', sauf vides"""
+    #vides = ensemble de tuples (ligne, colonne) des casiers qu'on veut laisser vides
     casiers = []
     for l in range(3):
         for c in range(8):

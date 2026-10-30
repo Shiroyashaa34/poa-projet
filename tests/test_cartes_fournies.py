@@ -16,7 +16,7 @@ class TestCartesFournies(unittest.TestCase):
                 armoire = rio.charger_armoire(outils.DONNEES / f"{scenario['armoire']}.json")
                 trace = rio.Trace(carte["nom"], scenario["nom"])
 
-                #si l'agent lit la carte, il doit pas planter
+                #on retire la grille, si l'agent s'en sort, c'est qu'il passe bien par Monde et pas par carte["grille"]
                 sans_grille = {k: v for k, v in carte.items() if k != "grille"}
                 agent = Agent(sans_grille, dico, Monde(carte, armoire), trace)
                 for demande in scenario["demandes"]:

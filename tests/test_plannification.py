@@ -13,7 +13,7 @@ PIECES = [
     "#.D...P.#",
     "#########",
 ]
-# meme plan, mais sans ouverture
+#même plan, mais la case (3,4) devient un mur: les deux pièces sont scellées
 FERME = [ligne if i != 3 else "#.D.#.P.#" for i, ligne in enumerate(PIECES)]
  
  

@@ -1,6 +1,6 @@
 import unittest
 
-import outils
+import tests.outils as outils
 import reconfort_io as rio
 from decision import construire_lexique, analyser_message
 

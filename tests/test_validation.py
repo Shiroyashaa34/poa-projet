@@ -29,9 +29,9 @@ class TestValidation(unittest.TestCase):
     def test_carte_invalide(self):
         base = outils.carte_depuis_grille(GRILLE)
         for err in [
-            {**base, "grille": ["###", "##"]},          # non rectangulaire
-            {**base, "depart_robot": [9, 9]},           # hors bornes
-            {**base, "depart_robot": [0, 0]},           # sur un mur
+            {**base, "grille": ["###", "##"]},          #non rectangulaire
+            {**base, "depart_robot": [9, 9]},           #hors bornes
+            {**base, "depart_robot": [0, 0]},           #sur un mur-> robot bloqué dès le départ
         ]:
             with self.assertRaises(rio.ErreurFichier):
                 rio.charger_carte(self.ecrire(err))
@@ -39,8 +39,8 @@ class TestValidation(unittest.TestCase):
     def test_armoire_invalide(self):
         base = outils.armoire_test()
         for err in [
-            {**base, "casiers": base["casiers"][:20]},  # pas 24 casiers
-            {**base, "casier_depart": [5, 0]},          # hors de l'armoire
+            {**base, "casiers": base["casiers"][:20]},  #pas 24 casiers
+            {**base, "casier_depart": [5, 0]},          #hors armoire
         ]:
             with self.assertRaises(rio.ErreurFichier):
                 rio.charger_armoire(self.ecrire(err))

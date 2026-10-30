@@ -16,6 +16,7 @@ GRILLE = [
 class TestSelecteur(unittest.TestCase):
 
     def monde_devant_armoire(self, casier_depart):
+        # R est en (1,1) et l'armoire en (1,3) : un pas vers l'est nous y colle
         carte = outils.carte_depuis_grille(GRILLE)
         monde = Monde(carte, outils.armoire_test(casier_depart=casier_depart))
         monde.avancer("E")                      
@@ -60,6 +61,7 @@ class TestRepli(unittest.TestCase):
         self.assertTrue({(0, 4), (1, 4), (2, 4)} <= vus)
 
     def test_aucun_casier_garni_a_distance_2(self):
+        #le repli s'arrête à 2 colonnes; au-delà, on abandonne
         vides = {(l, c) for l in range(3) for c in (2, 3, 4, 5, 6)}
         liv, _ = self.livrer(vides)
         self.assertFalse(liv["succes"])
