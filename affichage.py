@@ -1,5 +1,8 @@
 """
-lancer: python affichage.py <carte.json> <trace.json> [demande] [secondes_par_pas]
+lancer :
+python agent.py <carte.json> <scenario.json> <dossier_donnees> <sortie.json>
+puis :
+python affichage.py <carte.json> <sortie.json> [demande] [secondes_par_pas]
 
 A gauche la vraie carte, a droite la carte mentale du robot.
 Ce script n'est pas l'agent : il a le droit de lire la grille.
@@ -27,6 +30,7 @@ COULEUR = {
     "█": "\033[92m",   #robot: vert 
 }
 ROUGE = "\033[91m"     #mur decouvert a ce pas
+CIBLE = "\033[93;7m"   #resident vise
 
 def colorer(symbole, couleur=None):
     couleur = couleur or COULEUR.get(symbole)
@@ -65,6 +69,9 @@ def ajouter_perception(mentale, position, perception):
 
 def dessiner(carte, trace, mentale, pas, livraisons_faites, changees):
     l_robot, c_robot = pas["position"]
+    liv = next((x for x in trace["livraisons"] if x["demande"] == pas["demande"]), None)
+    res = next((r for r in carte["residents"] if liv and r["id"] == liv["resident"]), None)
+    pos_cible = tuple(res["position"]) if res else None
     print(f" {carte['nom']} — {trace['scenario']}")
     print(f" Demande {pas['demande']}    t = {pas['t']}\n")
     print(f" {'REALITE':<{len(carte['grille'][0]) + 6}}CARTE MENTALE DU ROBOT")
@@ -75,12 +82,15 @@ def dessiner(carte, trace, mentale, pas, livraisons_faites, changees):
             reel[c_robot] = "█"
             ment[c_robot] = "█"
         nouveaux_murs = {c for (l2, c, sym) in changees if l2 == l and sym == "#"}
-        reel = [colorer(s) for s in reel]
-        ment = [colorer(s, ROUGE if c in nouveaux_murs else None) for c, s in enumerate(ment)]
+        reel = [colorer(s, CIBLE if (l, c) == pos_cible else None) for c, s in enumerate(reel)]
+        ment = [colorer(s, ROUGE if c in nouveaux_murs else CIBLE if (l, c) == pos_cible else None)
+                for c, s in enumerate(ment)]
         print(" " + "".join(reel) + "      " + "".join(ment))
 
     action = pas["action"] + (f" {pas['argument']}" if pas["argument"] else "")
     print(f"\n Action  : {action}")
+    if res:
+        print(f" Cible   : {res['id']} {res['nom']} {res['position']}")
     print(f" Casier  : {pas['casier']}   contenu : {pas['contenu_casier'] or '-'}")
     print(" Vu      : " + "  ".join(f"{d} {v}" for d, v in pas["perception"].items()))
 
@@ -143,4 +153,8 @@ def main(argv):
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    try:
+        sys.exit(main(sys.argv))
+    except KeyboardInterrupt:
+        print("\n Affichage interrompu.")
+        sys.exit(130)
