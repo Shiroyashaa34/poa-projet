@@ -102,6 +102,10 @@ def main(argv):
         carte = json.load(f)
     with open(argv[2], encoding="utf-8") as f:
         trace = json.load(f)
+    if trace["carte"] != carte["nom"]:
+        print(f"erreur : la trace vient de {trace['carte']}, pas de {carte['nom']}. "
+              "Relance agent.py avec cette carte.")
+        return 1
     demande = int(argv[3]) if len(argv) >= 4 else 1
     pause = float(argv[4]) if len(argv) == 5 else 1.0
 
