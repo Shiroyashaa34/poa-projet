@@ -61,7 +61,7 @@ faite nous-mêmes (`tests/cartes/`).
 
 **Ce qui marche.** Les 5 cartes fournies : toutes les demandes sont livrées et
 les traces sont valides. Les échecs (`emotion indeterminee`, `armoire vide`,
-`resident inaccessible`) sont gérés sans arrêter le scénario. Presque toutes les vérifications de la section 5.6 restent à compléter.
+`resident inaccessible`) sont gérés sans arrêter le scénario. Les fichiers invalides de la section 5.6 sont refusés, sauf quelques cas listés plus bas.
 
 **Ce qui ne marche pas.**
 - Si un résident est inaccessible, le robot garde l'objet en main, et les
