@@ -95,6 +95,8 @@ class Agent:
             self.memoriser(perception, contenu)
             cible = prochain_candidat(candidats, self.memoire.casiers)
             if cible is None:
+                #trace de la derniere observation pour prouver que TOUT a été vu
+                self.agir("ATTENDRE", None, perception, contenu)
                 return None
             casier, repli = cible
             if casier == self.casier:       # deja vu et garni : on le prend
