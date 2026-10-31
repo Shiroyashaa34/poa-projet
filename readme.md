@@ -61,8 +61,7 @@ faite nous-mêmes (`tests/cartes/`).
 
 **Ce qui marche.** Les 5 cartes fournies : toutes les demandes sont livrées et
 les traces sont valides. Les échecs (`emotion indeterminee`, `armoire vide`,
-`resident inaccessible`) sont gérés sans arrêter le scénario. Les fichiers
-invalides de la section 5.6 sont refusés.
+`resident inaccessible`) sont gérés sans arrêter le scénario. Presque toutes les vérifications de la section 5.6 restent à compléter.
 
 **Ce qui ne marche pas.**
 - Si un résident est inaccessible, le robot garde l'objet en main, et les
@@ -72,9 +71,9 @@ invalides de la section 5.6 sont refusés.
   grandes cartes.
 - Il n'est pas optimal: il peut aller dans des culs-de-sac et repasser par des
   casiers déjà vus..
-- Un résident sans champ `nom` n'est pas refusé.
+- La validation reste incomplète: un résident sans nom, un casier sans objet ou une version de mauvais type comme true sont encore acceptés.
 
 ## Vidéo
 
-nommée `demo.mp4`, également déclarée dans `rendu.json`. Sera soit dans le zip soit en lien si ça s'envoie pas par mail.
+Dans le zip, nommée `demo.mp4`, également déclarée dans `rendu.json`. 
 
